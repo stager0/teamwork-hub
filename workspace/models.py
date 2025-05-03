@@ -1,5 +1,5 @@
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MinLengthValidator
+from django.core.validators import MinLengthValidator, MinValueValidator, MaxValueValidator
 from django.db import models
 
 from teamwork_hub import settings
@@ -23,6 +23,9 @@ class Direction(models.Model):
 class TaskType(models.Model):
     name = models.CharField(max_length=55)
 
+    def __str__(self):
+        return self.name
+
 
 class Command(models.Model):
     name = models.CharField(max_length=155)
@@ -32,6 +35,9 @@ class Command(models.Model):
         max_length=10,
         validators=[MinLengthValidator(10)]
     )
+
+    def __str__(self):
+        return self.name
 
 
 class Worker(AbstractUser):
@@ -43,10 +49,21 @@ class Worker(AbstractUser):
 class Project(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(max_length=512)
-    start_date = models.DateTimeField(blank=True, null=True)
+    start_date = models.DateField(blank=True, null=True)
+    command = models.ForeignKey(Command, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return f"{self.title} {self.description} {self.start_date}"
 
 
 class Task(models.Model):
+    class StageOfExecution(models.IntegerChoices):
+        TWENTY_FIVE = 25, '25%'
+        FIFTY = 50, '50%'
+        SEVENTY_FIVE = 75, '75%'
+        ONE_HUNDRED = 100, '100%'
+
+
     STATUS_CHOICES = [
         ("to_do", "To Do"),
         ("in_progress", "In Progress"),
@@ -57,9 +74,29 @@ class Task(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(max_length=512)
     task_type = models.ForeignKey(TaskType, on_delete=models.SET_NULL, null=True, related_name="tasks")
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="To Do")
+    stage_of_execution = models.IntegerField(
+        choices=StageOfExecution.choices,
+        default="25",
+        null=True,
+    )
+    execution_status = models.IntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(100)
+        ], default="0", null=True
+    )
     assigned_to = models.ForeignKey(Worker, on_delete=models.SET_NULL, default=None, null=True, related_name="tasks")
     created_at = models.DateTimeField(auto_now_add=True)
     direction = models.ForeignKey(Direction, on_delete=models.SET_NULL, null=True, related_name="tasks")
     deadline = models.DateField(null=True, blank=True)
     github_link = models.CharField(max_length=155, null=True, blank=True)
+
+
+class Archive(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True)
+    worker = models.ForeignKey(Worker, on_delete=models.SET_NULL, null=True)
+    project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True)
+    end_date = models.DateField(auto_now_add=True)
+
+
