@@ -1,0 +1,172 @@
+{% extends "layouts/base-presentation.html" %}
+{% load crispy_forms_filters %}
+
+{% block title %}Task Details: {{ task.title }}{% endblock %}
+
+{% block content %}
+  <div class="container mt-5 mb-5 pt-6">
+
+    <div class="row mb-4 align-items-center">
+      <div class="col">
+        <h1>Task Details: "{{ task.title }}"</h1>
+      </div>
+      <div class="col-auto">
+        <button type="button"
+                class="btn btn-success"
+                data-bs-toggle="modal"
+                data-bs-target="#updateTaskModal{{ task.pk }}">
+          Update Task
+        </button>
+        <a href="{% url 'workspace:task-delete' task.id %}" class="btn btn-danger">
+          Delete Task
+        </a>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Task Information</h4>
+        <div>
+          {% if task.assigned_to == user %}
+            <button type="button"
+                    class="btn btn-secondary btn-sm me-1"
+                    data-bs-toggle="modal"
+                    data-bs-target="#changeTaskExecutionStatusModal{{ task.pk }}">
+              Change Status
+            </button>
+          {% endif %}
+
+          <a href="{% url "workspace:assign-to-task" task.id %}" class="btn btn-dark btn-sm">
+            {% if not task.assigned_to %}Assign me{% else %}Unassign me{% endif %}
+          </a>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <p><strong>Title:</strong> {{ task.title }}</p>
+
+        {% if task.description %}
+          <p><strong>Description:</strong> {{ task.description|safe }}</p>
+        {% endif %}
+
+        <hr>
+
+        <p>
+          <strong>Project:</strong>
+          {% if task.project %}
+            <a href="{% url 'workspace:project-detail' task.project.id %}">{{ task.project.title }}</a>
+          {% else %}
+            Not assigned
+          {% endif %}
+        </p>
+
+        <p><strong>Deadline:</strong> {% if task.deadline %}{{ task.deadline }}{% else %}Not set{% endif %}</p>
+
+        <p><strong>Stage Of Execution: ({{ task.get_status_display }})</strong></p>
+        {% if task.stage_of_execution is not None %}
+          <div class="progress mb-3" style="height: 15px;">
+            <div class="progress-bar
+           {% if task.stage_of_execution == 100 %}bg-success
+           {% elif task.stage_of_execution >= 75 %}bg-info
+           {% elif task.stage_of_execution >= 50 %}bg-warning
+           {% else %}bg-danger
+           {% endif %}"
+                 role="progressbar"
+                 style="width: {{ task.stage_of_execution }}%; height: 15px"
+                 aria-valuenow="{{ task.stage_of_execution }}"
+                 aria-valuemin="0"
+                 aria-valuemax="100">
+              {{ task.stage_of_execution }}%
+            </div>
+          </div>
+        {% else %}
+          <p>Not set</p>
+        {% endif %}
+
+        <p><strong>Execution Status:</strong></p>
+        {% if task.execution_status is not None %}
+          <div class="progress mb-3" style="height: 15px;">
+            <div class="progress-bar bg-success"
+                 role="progressbar"
+                 style="width: {{ task.execution_status }}%; height: 15px"
+                 aria-valuenow="{{ task.execution_status }}"
+                 aria-valuemin="0"
+                 aria-valuemax="100">
+              {{ task.execution_status }}%
+            </div>
+          </div>
+        {% else %}
+          <p>Not set</p>
+        {% endif %}
+
+        <p><strong>Assigned To:</strong>
+          {% if task.assigned_to %}
+            {{ task.assigned_to.get_full_name|default:task.assigned_to.username }}
+          {% else %}
+            Not assigned
+          {% endif %}
+        </p>
+
+        <p><strong>Task Type:</strong> {% if task.task_type %}{{ task.task_type.name }}{% else %}Not set{% endif %}</p>
+
+        <p><strong>Status:</strong> {% if task.status %}{{ task.status }}{% else %}Not set{% endif %}</p>
+
+        {% if task.created_at %}
+          <p><strong>Created At:</strong> {{ task.created_at|date:"Y-m-d H:i" }}</p>
+        {% endif %}
+
+      </div>
+    </div>
+
+  </div>
+
+
+<div class="modal fade" id="changeTaskExecutionStatusModal{{ task.pk }}" tabindex="-1"
+     aria-labelledby="updateTaskLabel{{ task.pk }}"
+     aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'workspace:change-task-execution' task.pk %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="updateTaskLabel{{ task.pk }}">Change Execution Status: "{{ task.title }}"</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          {{ form|crispy }}
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Save</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+  <div class="modal fade" id="updateTaskModal{{ task.pk }}" tabindex="-1"
+       aria-labelledby="updateTaskModalLabel{{ task.pk }}" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="post" action="{% url 'workspace:task-modal-update' task.pk %}">
+          {% csrf_token %}
+          <div class="modal-header">
+            <h5 class="modal-title" id="updateTaskModalLabel{{ task.pk }}">Update Task Details: "{{ task.title }}"</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            {{ form_update|crispy }}
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+{% endblock content %}

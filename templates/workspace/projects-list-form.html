@@ -1,0 +1,31 @@
+{% extends "layouts/base-presentation.html" %}
+{% load crispy_forms_filters %}
+
+{% block content %}
+  <div class="container mt-5 mb-5 pt-6">
+
+
+    <h1 class="mb-4">{{ object|yesno:"Create,Update" }} Project</h1>
+
+    <div class="card">
+      <div class="card-header">
+        <h4 class="mb-0">Project Details</h4>
+      </div>
+      <div class="card-body">
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {{ form|crispy }}
+
+          <div class="mt-4">
+            <button type="submit" class="btn btn-primary me-2">Save Project</button>
+
+
+            <a href="{% url 'workspace:projects-list' %}" class="btn btn-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+{% endblock content %}

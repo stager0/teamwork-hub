@@ -1,0 +1,84 @@
+{% extends "layouts/base-presentation.html" %}
+
+{% block content %}
+  <div class="container mt-5 mb-5 pt-6">
+    <div class="row mb-4">
+      <div class="col">
+        <h1>My Tasks List</h1>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="card">
+      <div class="card-header">
+        <h4 class="mb-0">Assigned Tasks</h4>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+            <tr>
+              <th class="text-center">#</th>
+              <th>Task Name</th>
+              <th>Deadline</th>
+              <th>Status</th>
+              <th>Progress</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for task in tasks %}
+              <tr data-href="{% url 'workspace:task-detail' task.pk %}" style="cursor: pointer;">
+                <td class="p-0 text-center align-middle" style="background-color: white;">{{ forloop.counter }}</td>
+                <td class="align-middle">
+                  <a href="{% url 'workspace:project-task-detail' project_id=task.project.id pk=task.id %}">
+                    {{ task.title }}
+                  </a>
+                </td>
+
+                <td class="align-middle">
+                  {% if task.deadline %}
+                    {{ task.deadline|date:"Y-m-d" }}
+                  {% else %}
+                    Not set
+                  {% endif %}
+                </td>
+                <td class="align-middle">
+                  {% if task.status %}
+                    {{ task.get_status_display }}
+                  {% else %}
+                    Not set
+                  {% endif %}
+                </td>
+                <td class="align-middle" style="min-width: 150px;">
+                  {% if task.stage_of_execution is not None %}
+                    <div class="progress" style="height: 15px;">
+                      <div class="progress-bar bg-success"
+                           role="progressbar"
+                           style="width: {{ task.execution_status }}%; height: 15px"
+                           aria-valuenow="{{ task.execution_status }}"
+                           aria-valuemin="0"
+                           aria-valuemax="100">
+                        {{ task.execution_status }}%
+                      </div>
+                    </div>
+                  {% else %}
+                    Not set
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-center" style="background-color: white;">No tasks assigned to this
+                  project.
+                </td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock content %}

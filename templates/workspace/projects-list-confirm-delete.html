@@ -1,0 +1,41 @@
+{% extends 'layouts/base-presentation.html' %}
+
+{% block title %}Delete Project: {{ object.title }}{% endblock %}
+
+{% block content %}
+  <div class="container mt-5 mb-5 pt-7">
+
+    <h1 class="mb-4">Delete Project</h1>
+
+    <hr>
+
+    <div class="card">
+      <div class="card-header bg-danger text-white">
+        <h4 class="mb-0">Confirm Deletion</h4>
+      </div>
+      <div class="card-body">
+        <p>Are you sure you want to delete the project:</p>
+        <h3>"{{ object.title }}"</h3>
+
+        {% if object.tasks.exists %}
+           <div class="alert alert-warning mt-3">
+             <i class="fas fa-exclamation-triangle me-2"></i> This project has {{ object.tasks.count }} associated tasks. Deleting this project will also delete all its tasks.
+           </div>
+        {% endif %}
+
+        <form method="post" action="">
+          {% csrf_token %}
+
+          <div class="mt-4">
+            <button type="submit" class="btn btn-danger me-2">Yes, Delete</button>
+            <a href="{% url 'workspace:project-detail' object.id %}" class="btn btn-secondary">Cancel</a>
+             {% comment %}
+             <a href="{% url 'workspace:projects-list' %}" class="btn btn-secondary">Cancel</a>
+             {% endcomment %}
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+{% endblock content %}

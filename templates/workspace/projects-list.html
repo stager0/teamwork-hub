@@ -1,0 +1,120 @@
+{% extends "layouts/base-presentation.html" %}
+{% load crispy_forms_filters %}
+
+{% block title %}Projects List{% endblock %}
+
+{% block content %}
+  <div class="container mt-5 mb-5 pt-6">
+
+    <div class="row mb-4 align-items-center">
+      <div class="col">
+        <h1>Projects List</h1>
+      </div>
+      {% if user.is_leader %}
+        <div class="col-auto">
+          <button type="button" class="btn btn-primary btn-sm"
+                  data-bs-toggle="modal"
+                  data-bs-target="#createProjectModal">
+            <i class="fas fa-plus me-1"></i> Create Project
+          </button>
+        </div>
+      {% endif %}
+    </div>
+
+    <hr class="mb-4">
+
+    <div class="row justify-content-center mb-4">
+      <div class="col-md-8 col-lg-6">
+        <div class="card bg-light">
+           <div class="card-body p-3">
+              <form action="" method="get" class="d-flex align-items-center">
+                 <div class="me-2 flex-grow-1">
+                   {{ form|crispy }}
+                 </div>
+                 <button class="btn btn-secondary ms-2" type="submit">
+                   <i class="fas fa-search"></i> Search
+                 </button>
+              </form>
+           </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      {% for project in projects %}
+        <div class="col-md-6 mb-4">
+          <div class="card project-card h-100" style="position: relative;">
+            <div class="card-body">
+              <h5 class="card-title mb-2">
+                 {{ project.title }}
+                 <small class="text-muted ms-2">#{{ project.id }}</small>
+              </h5>
+              <p class="card-text">{{ project.description|truncatechars:150|safe }}</p>
+              <hr>
+              <p class="card-text mb-1"><small><strong>Command:</strong> {% if project.command %}{{ project.command.name }}{% else %}Not assigned{% endif %}</small></p>
+              <p class="card-text mb-1"><small><strong>Start Date:</strong> {% if project.start_date %}{{ project.start_date }}{% else %}Not set{% endif %}</small></p>
+              {% if project.end_date %}
+                <p class="card-text mb-1"><small><strong>End Date:</strong> {% if project.end_date %}{{ project.end_date }}{% else %}Not set{% endif %}</small></p>
+              {% endif %}
+
+              <div class="project-actions-overlay">
+                 <a href="{% url 'workspace:project-detail' project.id %}" class="btn btn-outline-primary btn-sm me-1">Details</a>
+                 <a href="{% url 'workspace:project-tasks-list' project.id %}" class="btn btn-outline-secondary btn-sm">Tasks</a>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col-12">
+           <p class="text-center">No projects found.</p>
+        </div>
+      {% endfor %}
+    </div>
+
+  </div>
+
+  <div class="modal fade" id="createProjectModal" tabindex="-1" aria-labelledby="createProjectModalLabel"
+       aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="post" action="{% url 'workspace:projects-list-create' %}">
+          {% csrf_token %}
+          <div class="modal-header">
+            <h5 class="modal-title" id="createProjectModalLabel">Create New Project</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            {{ create_form|crispy }}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-success">Create</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="post" action="{% url 'workspace:task-create' %}">
+          {% csrf_token %}
+          <div class="modal-header">
+            <h5 class="modal-title" id="createTaskModalLabel">Create New Task</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            {{ task_create_form|crispy }}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-success">Create Task</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+{% endblock content %}
