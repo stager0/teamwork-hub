@@ -18,7 +18,7 @@
           <div class="col-xl-4 col-lg-5 col-md-7 d-flex flex-column mx-lg-0 mx-auto">
             <div class="card card-plain">
               <div class="card-header pb-0 text-left">
-                <h4 class="font-weight-bolder">Sign In</h4>
+                <h4 class="font-weight-bolder">Sign In &nbsp;</h4>
                 <p class="mb-0">
                   {% if msg %}
                       {{ msg | safe }}
@@ -35,11 +35,6 @@
 
                   <div class="mb-3">
                     {{ form|crispy }}
-                  </div>
-
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="rememberMe">
-                    <label class="form-check-label" for="rememberMe">Remember me</label>
                   </div>
                   <div class="text-center">
                     <button type="submit" name="login" 
@@ -62,8 +57,9 @@
                 <img class="max-width-500 w-100 position-relative z-index-2" src="/static/assets/img/illustrations/image.png">
               </div>
               <h4 class="mt-5 text-white font-weight-bolder">
-                teamwork-hub
+                Teamwork Hub
               </h4>
+              <p class="h4">A place where challenges bring the team together.</p>
             </div>
           </div>
         </div>

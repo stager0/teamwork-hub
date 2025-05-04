@@ -20,22 +20,21 @@
         </div>
       {% endif %}
     </div>
-
     <hr class="mb-4">
 
     <div class="row justify-content-center mb-4">
       <div class="col-md-8 col-lg-6">
         <div class="card bg-light">
-           <div class="card-body p-3">
-              <form action="" method="get" class="d-flex align-items-center">
-                 <div class="me-2 flex-grow-1">
-                   {{ form|crispy }}
-                 </div>
-                 <button class="btn btn-secondary ms-2" type="submit">
-                   <i class="fas fa-search"></i> Search
-                 </button>
-              </form>
-           </div>
+          <div class="card-body p-3">
+            <form action="" method="get" class="d-flex align-items-center">
+              <div class="me-2 flex-grow-1">
+                {{ form|crispy }}
+              </div>
+              <button class="btn btn-secondary ms-2" type="submit">
+                <i class="fas fa-search"></i> Search
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
@@ -46,28 +45,30 @@
           <div class="card project-card h-100" style="position: relative;">
             <div class="card-body">
               <h5 class="card-title mb-2">
-                 {{ project.title }}
-                 <small class="text-muted ms-2">#{{ project.id }}</small>
+                {{ project.title }}
+                <small class="text-muted ms-2">#{{ project.id }}</small>
               </h5>
               <p class="card-text">{{ project.description|truncatechars:150|safe }}</p>
               <hr>
-              <p class="card-text mb-1"><small><strong>Command:</strong> {% if project.command %}{{ project.command.name }}{% else %}Not assigned{% endif %}</small></p>
-              <p class="card-text mb-1"><small><strong>Start Date:</strong> {% if project.start_date %}{{ project.start_date }}{% else %}Not set{% endif %}</small></p>
+              <p class="card-text mb-1"><small><strong>Command:</strong>
+                {% if project.command %}{{ project.command.name }}{% else %}Not assigned{% endif %}</small></p>
+              <p class="card-text mb-1"><small><strong>Start Date:</strong>
+                {% if project.start_date %}{{ project.start_date }}{% else %}Not set{% endif %}</small></p>
               {% if project.end_date %}
-                <p class="card-text mb-1"><small><strong>End Date:</strong> {% if project.end_date %}{{ project.end_date }}{% else %}Not set{% endif %}</small></p>
+                <p class="card-text mb-1"><small><strong>End Date:</strong>
+                  {% if project.end_date %}{{ project.end_date }}{% else %}Not set{% endif %}</small></p>
               {% endif %}
 
               <div class="project-actions-overlay">
-                 <a href="{% url 'workspace:project-detail' project.id %}" class="btn btn-outline-primary btn-sm me-1">Details</a>
-                 <a href="{% url 'workspace:project-tasks-list' project.id %}" class="btn btn-outline-secondary btn-sm">Tasks</a>
+                <a href="{% url 'workspace:project-detail' project.id %}" class="btn btn-outline-primary btn-sm me-1">Details</a>
+                <a href="{% url 'workspace:project-tasks-list' project.id %}" class="btn btn-outline-secondary btn-sm">Tasks</a>
               </div>
-
             </div>
           </div>
         </div>
       {% empty %}
         <div class="col-12">
-           <p class="text-center">No projects found.</p>
+          <p class="text-center">No projects found.</p>
         </div>
       {% endfor %}
     </div>

@@ -34,6 +34,7 @@
             </thead>
             <tbody>
             {% for task in tasks %}
+              {% if task.id not in archive_tasks_ids %}
               <tr style="position: relative;">
                 <td class="py-2">
                   <a href="{% url 'workspace:task-detail' task.id %}"
@@ -87,6 +88,7 @@
                 {% endif %}
                 <td class="py-2"><strong>{{ task.task_type.name }}</strong></td>
                 <td class="py-2"><strong>{{ task.status }}</strong></td>
+              {% endif %}
               </tr>
 
             {% empty %}

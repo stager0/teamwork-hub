@@ -10,17 +10,25 @@
       <div class="col">
         <h1>Task Details: "{{ task.title }}"</h1>
       </div>
-      <div class="col-auto">
-        <button type="button"
-                class="btn btn-success"
-                data-bs-toggle="modal"
-                data-bs-target="#updateTaskModal{{ task.pk }}">
-          Update Task
-        </button>
-        <a href="{% url 'workspace:task-delete' task.id %}" class="btn btn-danger">
-          Delete Task
-        </a>
-      </div>
+      {% if user.is_leader %}
+        <div class="col-auto">
+          <button type="button"
+                  class="btn btn-success"
+                  data-bs-toggle="modal"
+                  data-bs-target="#updateTaskModal{{ task.pk }}">
+            Update Task
+          </button>
+
+          <a href="{% url 'workspace:task-delete' task.id %}" class="btn btn-danger">
+            Delete Task
+          </a>
+
+          <a class="btn btn-outline-primary"
+             href="{% url 'workspace:task-in-archive' task.id %}">
+            Archive the Task
+          </a>
+        </div>
+      {% endif %}
     </div>
 
     <hr>
@@ -38,9 +46,12 @@
             </button>
           {% endif %}
 
-          <a href="{% url "workspace:assign-to-task" task.id %}" class="btn btn-dark btn-sm">
-            {% if not task.assigned_to %}Assign me{% else %}Unassign me{% endif %}
+          <a href="{% url "workspace:assign-to-task" task.id %}" class="">
+            {% if not task.assigned_to %}Assign me{% endif %}
           </a>
+          {% if task.assign_to == user %}
+            <a href="{% url "workspace:assign-to-task" task.id %}" class="btn btn-dark btn-sm">Unassign me</a>
+          {% endif %}
         </div>
       </div>
 
@@ -117,6 +128,9 @@
         {% if task.created_at %}
           <p><strong>Created At:</strong> {{ task.created_at|date:"Y-m-d H:i" }}</p>
         {% endif %}
+        {% if task.link_to_solution %}
+          <p><strong>Link to Solution: </strong>{{ task.link_to_solution }}</p>
+        {% endif %}
 
       </div>
     </div>
@@ -124,28 +138,28 @@
   </div>
 
 
-<div class="modal fade" id="changeTaskExecutionStatusModal{{ task.pk }}" tabindex="-1"
-     aria-labelledby="updateTaskLabel{{ task.pk }}"
-     aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form method="post" action="{% url 'workspace:change-task-execution' task.pk %}">
-        {% csrf_token %}
-        <div class="modal-header">
-          <h5 class="modal-title" id="updateTaskLabel{{ task.pk }}">Change Execution Status: "{{ task.title }}"</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          {{ form|crispy }}
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-success">Save</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        </div>
-      </form>
+  <div class="modal fade" id="changeTaskExecutionStatusModal{{ task.pk }}" tabindex="-1"
+       aria-labelledby="updateTaskLabel{{ task.pk }}"
+       aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="post" action="{% url 'workspace:change-task-execution' task.pk %}">
+          {% csrf_token %}
+          <div class="modal-header">
+            <h5 class="modal-title" id="updateTaskLabel{{ task.pk }}">Change Execution Status: "{{ task.title }}"</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            {{ form|crispy }}
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Save</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
-</div>
 
   <div class="modal fade" id="updateTaskModal{{ task.pk }}" tabindex="-1"
        aria-labelledby="updateTaskModalLabel{{ task.pk }}" aria-hidden="true">

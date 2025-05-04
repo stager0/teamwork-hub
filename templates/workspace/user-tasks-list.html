@@ -24,10 +24,12 @@
               <th>Deadline</th>
               <th>Status</th>
               <th>Progress</th>
+              <th>Direction</th>
             </tr>
             </thead>
             <tbody>
             {% for task in tasks %}
+              {% if task.execution_status < 100 %}
               <tr data-href="{% url 'workspace:task-detail' task.pk %}" style="cursor: pointer;">
                 <td class="p-0 text-center align-middle" style="background-color: white;">{{ forloop.counter }}</td>
                 <td class="align-middle">
@@ -62,11 +64,13 @@
                         {{ task.execution_status }}%
                       </div>
                     </div>
+                    <td>{{ task.direction.direction }}</td>
                   {% else %}
                     Not set
                   {% endif %}
                 </td>
               </tr>
+              {% endif %}
             {% empty %}
               <tr>
                 <td colspan="5" class="text-center" style="background-color: white;">No tasks assigned to this

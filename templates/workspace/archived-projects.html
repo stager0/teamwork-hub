@@ -1,1 +1,56 @@
 {% extends "layouts/base-presentation.html" %}
+{% load crispy_forms_filters %}
+
+{% block title %}Project Archive{% endblock %}
+
+{% block content %}
+  <div class="container mt-5 mb-5 pt-6">
+
+    <div class="row mb-4">
+      <div class="col">
+        <h1>Project Archive</h1>
+      </div>
+    </div>
+
+    <hr>
+
+    {% if archived_projects %}
+      <div class="row">
+        {% for project in projects %}
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card project-card" data-href="{% url 'workspace:project-detail' project.id %}" style="cursor: pointer;">
+              <div class="card-body">
+                <h5 class="card-title"><a href="{% url "workspace:project-detail" project.id %}">{{ project.title }}</a></h5>
+                <hr>
+                <p class="card-text"><strong>Description:</strong> {{ project.description|default:"Not set" }}</p>
+                <hr>
+                <p class="card-text"><strong>Count of tasks: </strong>{{ project.tasks.count }}</p>
+                <hr>
+                <p style="color: forestgreen">Completed</p>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="card">
+        <div class="card-body">
+          <p class="text-center">No archived projects found.</p>
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
+
+  {% block javascripts %}
+    {{ block.super }}
+    <script>
+      $(document).ready(function() {
+        $('.project-card[data-href]').on('click', function() {
+          window.location = $(this).data('href');
+        });
+      });
+    </script>
+  {% endblock javascripts %}
+
+{% endblock content %}
