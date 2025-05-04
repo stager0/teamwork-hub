@@ -91,12 +91,13 @@ class Task(models.Model):
     direction = models.ForeignKey(Direction, on_delete=models.SET_NULL, null=True, related_name="tasks")
     deadline = models.DateField(null=True, blank=True)
     github_link = models.CharField(max_length=155, null=True, blank=True)
+    link_to_solution = models.TextField(max_length=512, null=True)
 
 
 class Archive(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True)
     worker = models.ForeignKey(Worker, on_delete=models.SET_NULL, null=True)
     project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True)
-    end_date = models.DateField(auto_now_add=True)
+    end_date = models.DateField(auto_now_add=True, null=True)
 
 
