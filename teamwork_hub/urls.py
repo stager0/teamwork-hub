@@ -16,6 +16,7 @@ Including another URLconf
 """
 
 from django.contrib import admin
+from django.contrib.auth.views import LogoutView
 from django.urls import path, include
 
 from workspace.views import CustomRegisterView, CustomLoginView
@@ -24,6 +25,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("workspace.urls", namespace="workspace")),
     path("accounts/login/", CustomLoginView.as_view(), name="login"),
-    path("accounts/register/", CustomRegisterView.as_view(), name="register")
+    path("accounts/register/", CustomRegisterView.as_view(), name="register"),
+    path("accounts/logout/", LogoutView.as_view(next_page="login"), name="logout"),
 ]
 
