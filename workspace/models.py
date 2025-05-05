@@ -30,7 +30,7 @@ class TaskType(models.Model):
 class Command(models.Model):
     name = models.CharField(max_length=155)
     leader = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="commands_lead")
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
     code = models.CharField(
         max_length=10,
         validators=[MinLengthValidator(10)]
@@ -53,7 +53,7 @@ class Project(models.Model):
     command = models.ForeignKey(Command, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
-        return f"{self.title} {self.description} {self.start_date}"
+        return self.title
 
 
 class Task(models.Model):
@@ -91,7 +91,10 @@ class Task(models.Model):
     direction = models.ForeignKey(Direction, on_delete=models.SET_NULL, null=True, related_name="tasks")
     deadline = models.DateField(null=True, blank=True)
     github_link = models.CharField(max_length=155, null=True, blank=True)
-    link_to_solution = models.TextField(max_length=512, null=True)
+    link_to_solution = models.TextField(max_length=155, null=True)
+
+    def __str__(self):
+        return f"{self.title}, task type: {self.task_type}, direction: {self.direction.direction}"
 
 
 class Archive(models.Model):
