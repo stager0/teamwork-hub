@@ -1,16 +1,17 @@
 {% extends "layouts/base-presentation.html" %}
 {% load crispy_forms_filters %}
+{% load i18n %}
 
-{% block title %}Tasks{% endblock %}
+{% block title %}{% trans "Tasks" %}{% endblock %}
 
 {% block content %}
   <div class="container pt-5 pt-8">
     <div class="row mb-3">
       <div class="col d-flex justify-content-between align-items-center">
-        <h4 class="text-primary mb-0"><i class="fas fa-tasks me-2"></i>Tasks List</h4>
-        {% if user.is_leader %}
+        <h4 class="text-primary mb-0"><i class="fas fa-tasks me-2"></i>{% trans "Tasks List" %}</h4>
+        {% if user.is_authenticated and user.is_leader %}
           <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createTaskModal">
-            <i class="fas fa-plus me-1"></i> Create Task
+            <i class="fas fa-plus me-1"></i> {% trans "Create Task" %}
           </button>
         {% endif %}
       </div>
@@ -22,24 +23,26 @@
           <table class="table table-hover table-bordered align-middle">
             <thead class="table-light">
             <tr>
-              <th>Task Name</th>
-              <th>Progress</th>
-              <th>Dates</th>
-              {% if user.is_leader %}
-                <th>Actions</th>
+              <th>{% trans "Task Name" %}</th>
+              <th>{% trans "Progress" %}</th>
+              <th>{% trans "Dates" %}</th>
+              {% if user.is_authenticated and user.is_leader %}
+                <th>{% trans "Actions" %}</th>
               {% endif %}
-              <th>Task Type</th>
-              <th>Status</th>
+              <th>{% trans "Task Type" %}</th>
+              <th>{% trans "Status" %}</th>
             </tr>
             </thead>
             <tbody>
             {% for task in tasks %}
-              {% if task.id not in archive_tasks_ids %}
               <tr style="position: relative;">
                 <td class="py-2">
                   <a href="{% url 'workspace:task-detail' task.id %}"
                      class="stretched-link text-decoration-none text-dark">
-                    <strong>{{ task.title }}</strong>{% if task.assigned_to == user %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(My Task){% endif %}
+                    <strong>{{ task.title }}</strong>
+                    {% if user.is_authenticated and task.assigned_to == user %}
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(My Task)
+                    {% endif %}
                   </a>
                 </td>
                 <td class="align-middle py-2">
@@ -60,21 +63,21 @@
                 </td>
                 <td class="py-2">
                   <small>
-                    <strong>Created:</strong>
+                    <strong>{% trans "Created" %}:</strong>
                     {% if task.created_at %}
                       {{ task.created_at|date:"Y-m-d H:i" }}
                     {% else %}
-                      Not set
+                      {% trans "Not set" %}
                     {% endif %}<br>
-                    <strong>Deadline:</strong>
+                    <strong>{% trans "Deadline" %}:</strong>
                     {% if task.deadline %}
                       {{ task.deadline|date:"Y-m-d" }}
                     {% else %}
-                      Not set
+                      {% trans "Not set" %}
                     {% endif %}
                   </small>
                 </td>
-                {% if user.is_leader %}
+                {% if user.is_authenticated and user.is_leader %}
                   <td class="py-2">
                     <a href="{% url 'workspace:task-update' task.id %}" class="btn btn-outline-primary btn-sm me-1"
                        style="position: relative; z-index: 1;">
@@ -86,14 +89,12 @@
                     </a>
                   </td>
                 {% endif %}
-                <td class="py-2"><strong>{{ task.task_type.name }}</strong></td>
-                <td class="py-2"><strong>{{ task.status }}</strong></td>
-              {% endif %}
+                <td class="py-2"><strong>{% trans "Task Type" %}:</strong> {{ task.task_type.name }}</td>
+                <td class="py-2"><strong>{% trans "Status" %}:</strong> {% if task.status %}{{ task.get_status_display }}{% else %}{% trans "Not set" %}{% endif %}</td>
               </tr>
-
             {% empty %}
               <tr>
-                <td colspan="6" class="text-center text-muted py-4">No tasks found for this project.</td>
+                <td colspan="6" class="text-center text-muted py-4">{% trans "No tasks found for this project." %}</td>
               </tr>
             {% endfor %}
             </tbody>
@@ -103,26 +104,24 @@
     </div>
   </div>
 
-  <!-- Modal -->
   <div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <form method="post" action="{% url 'workspace:task-create' %}">
           {% csrf_token %}
           <div class="modal-header">
-            <h5 class="modal-title" id="createTaskModalLabel">Create New Task</h5>
+            <h5 class="modal-title" id="createTaskModalLabel">{% trans "Create New Task" %}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             {{ form|crispy }}
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-success">Create</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+            <button type="submit" class="btn btn-success">{% trans "Create" %}</button>
           </div>
         </form>
       </div>
     </div>
   </div>
 {% endblock %}
-

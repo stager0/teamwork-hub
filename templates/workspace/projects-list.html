@@ -15,7 +15,7 @@
           <button type="button" class="btn btn-primary btn-sm"
                   data-bs-toggle="modal"
                   data-bs-target="#createProjectModal">
-            <i class="fas fa-plus me-1"></i> Create Project
+            <i class="fas fa-plus me-1"></i>Create Project
           </button>
         </div>
       {% endif %}
@@ -56,7 +56,7 @@
                 {% if project.start_date %}{{ project.start_date }}{% else %}Not set{% endif %}</small></p>
               {% if project.end_date %}
                 <p class="card-text mb-1"><small><strong>End Date:</strong>
-                  {% if project.end_date %}{{ project.end_date }}{% else %}Not set{% endif %}</small></p>
+                  <p>This project is still active.</p>
               {% endif %}
 
               <div class="project-actions-overlay">

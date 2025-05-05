@@ -1,68 +1,94 @@
 {% extends "layouts/base-presentation.html" %}
+{% load i18n %}
 
-{% block title %}Colleagues Table{% endblock %}
+{% block title %}{% trans "Colleagues List" %}{% endblock %}
 
 {% block content %}
-  <div class="container mt-5 mb-5 pt-5">
+  <div class="container mt-5 mb-5 pt-6">
 
     <div class="row mb-4">
       <div class="col">
-        <h1>Colleagues List</h1>
+        <h1 class="text-primary"><i class="fas fa-users me-2"></i>{% trans "Team Members" %}</h1>
       </div>
     </div>
 
     <hr>
 
-    <div class="card">
-      <div class="card-header">
-        <h4 class="mb-0">All Colleagues</h4>
+    <div class="card shadow-lg border-0">
+      <div class="card-header pb-0">
+        <h4 class="mb-0">{% trans "All Team Members" %}</h4>
+        <p style="height: 7px; color: grey"> &nbsp; p.s: If you have any questions for someone, you can write to email
+          :)</p>
       </div>
-      <div class="card-body">
+      <div class="card-body pt-0">
         <div class="table-responsive">
-          <table class="table table-striped table-hover">
+          <table class="table table-hover align-middle">
             <thead>
-              <tr>
-                <th>Username</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Email</th>
-                <th>Direction</th>
-                <th>Command</th>
-                <th>Leader</th>
-              </tr>
+            <tr>
+              <th class="text-start">{% trans "Username" %}</th>
+              <th class="text-start">{% trans "First Name" %}</th>
+              <th class="text-start">{% trans "Last Name" %}</th>
+              <th class="text-start">{% trans "Email" %}</th>
+              <th class="text-start">{% trans "Direction" %}</th>
+              <th class="text-start">{% trans "Command Name" %}</th>
+              <th class="text-center">{% trans "Team Code" %}</th>
+              <th class="text-center">{% trans "Leader" %}</th>
+              {% if user.is_leader %}
+                <th class="text-center">{% trans "Update" %}</th>
+              {% endif %}
+            </tr>
             </thead>
             <tbody>
-            {% for colleague in workers.all %}
-              <tr style="background-color: #fff">
-                <td class="py-2">{{ colleague.username }}</td>
-                <td class="py-2">{{ colleague.first_name }}</td>
-                <td class="py-2">{{ colleague.last_name }}</td>
-                <td class="py-2">{{ colleague.email }}</td>
-                <td class="py-2">
+            {% for colleague in workers %}
+              <tr>
+                <td class="py-3">
+                  <a href="{% url 'workspace:user-detail' colleague.id %}" class="text-primary font-weight-bold">
+                    {{ colleague.username }}
+                  </a>
+                </td>
+                <td class="py-3">{{ colleague.first_name }}</td>
+                <td class="py-3">{{ colleague.last_name }}</td>
+                <td class="py-3">{{ colleague.email }}</td>
+                <td class="py-3">
                   {% if colleague.direction %}
                     {{ colleague.direction.direction }}
                   {% else %}
                     -
                   {% endif %}
                 </td>
-                <td class="py-2">
+                <td class="py-3">
                   {% if colleague.command %}
                     {{ colleague.command.name }}
                   {% else %}
                     -
                   {% endif %}
                 </td>
-                <td class="py-2 text-center">
+                {% load custom_filters %}
+                <td>
+                  {% if colleague.command.name %}
+                    {{ code_dict|dict_get:colleague.id }}
+                  {% endif %}
+                </td>
+                <td class="py-3 text-center">
                   {% if colleague.is_leader %}
                     <i class="fas fa-check-circle text-success"></i>
                   {% else %}
                     <i class="fas fa-times-circle text-danger"></i>
                   {% endif %}
                 </td>
+                <td>
+                  {% if user.is_leader %}
+                  <div class="col-auto">
+                    <a class="btn btn-success btn-sm" href="{% url "workspace:user-update" colleague.id %}">
+                      &nbsp;Update Member
+                    </a>
+                  </div>
+                  {% endif %}
+                </td>
               </tr>
             {% empty %}
               <tr>
-                <td colspan="7" class="text-center py-2">No colleagues found.</td>
+                <td colspan="7" class="text-center text-muted py-4">{% trans "No team members found." %}</td>
               </tr>
             {% endfor %}
             </tbody>

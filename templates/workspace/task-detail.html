@@ -1,32 +1,29 @@
 {% extends "layouts/base-presentation.html" %}
 {% load crispy_forms_filters %}
+{% load i18n %}
 
-{% block title %}Task Details: {{ task.title }}{% endblock %}
+{% block title %}{% trans "Task Details" %}: {{ task.title }}{% endblock %}
 
 {% block content %}
   <div class="container mt-5 mb-5 pt-6">
 
     <div class="row mb-4 align-items-center">
       <div class="col">
-        <h1>Task Details: "{{ task.title }}"</h1>
+        <h1>{% trans "Task Details" %}: "{{ task.title }}"</h1>
       </div>
-      {% if user.is_leader %}
+      {% if user.is_authenticated and user.is_leader %}
         <div class="col-auto">
           <button type="button"
-                  class="btn btn-success"
+                  class="btn btn-success me-2"
                   data-bs-toggle="modal"
                   data-bs-target="#updateTaskModal{{ task.pk }}">
-            Update Task
+            {% trans "Update Task" %}
           </button>
 
-          <a href="{% url 'workspace:task-delete' task.id %}" class="btn btn-danger">
-            Delete Task
+          <a href="{% url 'workspace:task-delete' task.id %}" class="btn btn-danger me-2">
+            {% trans "Delete Task" %}
           </a>
 
-          <a class="btn btn-outline-primary"
-             href="{% url 'workspace:task-in-archive' task.id %}">
-            Archive the Task
-          </a>
         </div>
       {% endif %}
     </div>
@@ -35,48 +32,46 @@
 
     <div class="card">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h4 class="mb-0">Task Information</h4>
+        <h4 class="mb-0">{% trans "Task Information" %}</h4>
         <div>
-          {% if task.assigned_to == user %}
-            <button type="button"
-                    class="btn btn-secondary btn-sm me-1"
-                    data-bs-toggle="modal"
-                    data-bs-target="#changeTaskExecutionStatusModal{{ task.pk }}">
-              Change Status
-            </button>
-          {% endif %}
-
-          <a href="{% url "workspace:assign-to-task" task.id %}" class="">
-            {% if not task.assigned_to %}Assign me{% endif %}
-          </a>
-          {% if task.assign_to == user %}
-            <a href="{% url "workspace:assign-to-task" task.id %}" class="btn btn-dark btn-sm">Unassign me</a>
+          {% if user.is_authenticated %}
+            {% if task.assigned_to == user %}
+              <button type="button"
+                      class="btn btn-secondary btn-sm me-1"
+                      data-bs-toggle="modal"
+                      data-bs-target="#changeTaskExecutionStatusModal{{ task.pk }}">
+                {% trans "Change Status" %}
+              </button>
+              <a href="{% url "workspace:assign-to-task" task.id %}" class="btn btn-dark btn-sm">{% trans "Unassign me" %}</a>
+            {% elif not task.assigned_to %}
+              <a href="{% url "workspace:assign-to-task" task.id %}" class="btn btn-dark btn-sm">{% trans "Assign me" %}</a>
+            {% endif %}
           {% endif %}
         </div>
       </div>
 
       <div class="card-body">
 
-        <p><strong>Title:</strong> {{ task.title }}</p>
+        <p><strong>{% trans "Title" %}:</strong> {{ task.title }}</p>
 
         {% if task.description %}
-          <p><strong>Description:</strong> {{ task.description|safe }}</p>
+          <p><strong>{% trans "Description" %}:</strong> {{ task.description|safe }}</p>
         {% endif %}
 
         <hr>
 
         <p>
-          <strong>Project:</strong>
+          <strong>{% trans "Project" %}:</strong>
           {% if task.project %}
             <a href="{% url 'workspace:project-detail' task.project.id %}">{{ task.project.title }}</a>
           {% else %}
-            Not assigned
+            {% trans "Not assigned" %}
           {% endif %}
         </p>
 
-        <p><strong>Deadline:</strong> {% if task.deadline %}{{ task.deadline }}{% else %}Not set{% endif %}</p>
+        <p><strong>{% trans "Deadline" %}:</strong> {% if task.deadline %}{{ task.deadline }}{% else %}{% trans "Not set" %}{% endif %}</p>
 
-        <p><strong>Stage Of Execution: ({{ task.get_status_display }})</strong></p>
+        <p><strong>{% trans "Stage Of Execution" %}: ({{ task.get_status_display }})</strong></p>
         {% if task.stage_of_execution is not None %}
           <div class="progress mb-3" style="height: 15px;">
             <div class="progress-bar
@@ -94,10 +89,10 @@
             </div>
           </div>
         {% else %}
-          <p>Not set</p>
+          <p>{% trans "Not set" %}</p>
         {% endif %}
 
-        <p><strong>Execution Status:</strong></p>
+        <p><strong>{% trans "Execution Status" %}:</strong></p>
         {% if task.execution_status is not None %}
           <div class="progress mb-3" style="height: 15px;">
             <div class="progress-bar bg-success"
@@ -110,26 +105,29 @@
             </div>
           </div>
         {% else %}
-          <p>Not set</p>
+          <p>{% trans "Not set" %}</p>
         {% endif %}
 
-        <p><strong>Assigned To:</strong>
+
+        <p><strong>{% trans "Assigned To" %}:</strong>
           {% if task.assigned_to %}
-            {{ task.assigned_to.get_full_name|default:task.assigned_to.username }}
+            <a href="{% url 'workspace:user-detail' task.assigned_to.id %}">
+              {{ task.assigned_to.get_full_name|default:task.assigned_to.username }}
+            </a>
           {% else %}
-            Not assigned
+            {% trans "Not assigned" %}
           {% endif %}
         </p>
 
-        <p><strong>Task Type:</strong> {% if task.task_type %}{{ task.task_type.name }}{% else %}Not set{% endif %}</p>
+        <p><strong>{% trans "Task Type" %}:</strong> {% if task.task_type %}{{ task.task_type.name }}{% else %}{% trans "Not set" %}{% endif %}</p>
 
-        <p><strong>Status:</strong> {% if task.status %}{{ task.status }}{% else %}Not set{% endif %}</p>
+        <p><strong>{% trans "Status" %}:</strong> {% if task.status %}{{ task.get_status_display }}{% else %}{% trans "Not set" %}{% endif %}</p>
 
         {% if task.created_at %}
-          <p><strong>Created At:</strong> {{ task.created_at|date:"Y-m-d H:i" }}</p>
+          <p><strong>{% trans "Created At" %}:</strong> {{ task.created_at|date:"Y-m-d H:i" }}</p>
         {% endif %}
         {% if task.link_to_solution %}
-          <p><strong>Link to Solution: </strong>{{ task.link_to_solution }}</p>
+          <p><strong>{% trans "Link to Solution" %}: </strong><a href="{{ task.link_to_solution }}" target="_blank">{{ task.link_to_solution }}</a></p>
         {% endif %}
 
       </div>
@@ -137,24 +135,23 @@
 
   </div>
 
-
   <div class="modal fade" id="changeTaskExecutionStatusModal{{ task.pk }}" tabindex="-1"
-       aria-labelledby="updateTaskLabel{{ task.pk }}"
+       aria-labelledby="changeTaskExecutionStatusLabel{{ task.pk }}"
        aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <form method="post" action="{% url 'workspace:change-task-execution' task.pk %}">
           {% csrf_token %}
           <div class="modal-header">
-            <h5 class="modal-title" id="updateTaskLabel{{ task.pk }}">Change Execution Status: "{{ task.title }}"</h5>
+            <h5 class="modal-title" id="changeTaskExecutionStatusLabel{{ task.pk }}">{% trans "Change Execution Status" %}: "{{ task.title }}"</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             {{ form|crispy }}
           </div>
           <div class="modal-footer">
-            <button type="submit" class="btn btn-success">Save</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-success">{% trans "Save" %}</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
           </div>
         </form>
       </div>
@@ -168,15 +165,15 @@
         <form method="post" action="{% url 'workspace:task-modal-update' task.pk %}">
           {% csrf_token %}
           <div class="modal-header">
-            <h5 class="modal-title" id="updateTaskModalLabel{{ task.pk }}">Update Task Details: "{{ task.title }}"</h5>
+            <h5 class="modal-title" id="updateTaskModalLabel{{ task.pk }}">{% trans "Update Task Details" %}: "{{ task.title }}"</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             {{ form_update|crispy }}
           </div>
           <div class="modal-footer">
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">{% trans "Save Changes" %}</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
           </div>
         </form>
       </div>

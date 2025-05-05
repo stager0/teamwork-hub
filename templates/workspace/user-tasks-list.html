@@ -1,39 +1,42 @@
 {% extends "layouts/base-presentation.html" %}
+{% load i18n %}
+
+
+{% block title %}{% trans "My Tasks" %}{% endblock %}
 
 {% block content %}
   <div class="container mt-5 mb-5 pt-6">
     <div class="row mb-4">
       <div class="col">
-        <h1>My Tasks List</h1>
+        <h1>{% trans "My Tasks List" %}</h1>
       </div>
     </div>
 
     <hr>
 
-    <div class="card">
+    <div class="card shadow-sm">
       <div class="card-header">
-        <h4 class="mb-0">Assigned Tasks</h4>
+        <h4 class="mb-0">{% trans "Assigned Tasks" %}</h4>
       </div>
       <div class="card-body">
         <div class="table-responsive">
-          <table class="table">
-            <thead>
+          <table class="table table-hover table-bordered align-middle">
+            <thead class="table-light">
             <tr>
               <th class="text-center">#</th>
-              <th>Task Name</th>
-              <th>Deadline</th>
-              <th>Status</th>
-              <th>Progress</th>
-              <th>Direction</th>
+              <th>{% trans "Task Name" %}</th>
+              <th>{% trans "Deadline" %}</th>
+              <th>{% trans "Status" %}</th>
+              <th>{% trans "Progress" %}</th>
+              <th>{% trans "Direction" %}</th>
             </tr>
             </thead>
             <tbody>
             {% for task in tasks %}
-              {% if task.execution_status < 100 %}
               <tr data-href="{% url 'workspace:task-detail' task.pk %}" style="cursor: pointer;">
-                <td class="p-0 text-center align-middle" style="background-color: white;">{{ forloop.counter }}</td>
+                <td class="text-center align-middle">{{ forloop.counter }}</td>
                 <td class="align-middle">
-                  <a href="{% url 'workspace:project-task-detail' project_id=task.project.id pk=task.id %}">
+                  <a href="{% url 'workspace:task-detail' task.id %}">
                     {{ task.title }}
                   </a>
                 </td>
@@ -42,18 +45,18 @@
                   {% if task.deadline %}
                     {{ task.deadline|date:"Y-m-d" }}
                   {% else %}
-                    Not set
+                    {% trans "Not set" %}
                   {% endif %}
                 </td>
                 <td class="align-middle">
                   {% if task.status %}
                     {{ task.get_status_display }}
                   {% else %}
-                    Not set
+                    {% trans "Not set" %}
                   {% endif %}
                 </td>
                 <td class="align-middle" style="min-width: 150px;">
-                  {% if task.stage_of_execution is not None %}
+                  {% if task.execution_status is not None %}
                     <div class="progress" style="height: 15px;">
                       <div class="progress-bar bg-success"
                            role="progressbar"
@@ -64,18 +67,21 @@
                         {{ task.execution_status }}%
                       </div>
                     </div>
-                    <td>{{ task.direction.direction }}</td>
                   {% else %}
-                    Not set
+                     {% trans "Not set" %}
                   {% endif %}
                 </td>
+                 <td class="align-middle">
+                    {% if task.direction %}
+                       {{ task.direction.direction }}
+                    {% else %}
+                       {% trans "Not set" %}
+                    {% endif %}
+                 </td>
               </tr>
-              {% endif %}
             {% empty %}
               <tr>
-                <td colspan="5" class="text-center" style="background-color: white;">No tasks assigned to this
-                  project.
-                </td>
+                <td colspan="6" class="text-center text-muted py-4">{% trans "No tasks assigned to you." %}</td>
               </tr>
             {% endfor %}
             </tbody>
