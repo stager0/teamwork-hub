@@ -5,5 +5,6 @@ register = template.Library()
 
 @register.filter
 def dict_get(data, key):
-    return data.get(key)
+    data = data.get(key)
+    return str(data)
 
