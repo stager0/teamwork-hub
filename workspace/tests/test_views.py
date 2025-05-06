@@ -1,9 +1,8 @@
 from django.contrib.auth import get_user_model
-from django.template.context_processors import request
 from django.test import TestCase
 from django.urls import reverse
 
-from workspace.models import Direction, Project, Command, Task, TaskType
+from workspace.models import Direction, Project, Command, Task, TaskType, Archive
 
 
 class BaseTestCase(TestCase):
@@ -34,6 +33,16 @@ class BaseTestCase(TestCase):
             direction=self.direction,
             command=self.command,
             is_leader=False,
+        )
+        self.leader_worker = get_user_model().objects.create_user(
+            username="leader_worker",
+            first_name="Joe",
+            last_name="Vie",
+            password="1qazcde3",
+            email="test@gmail.com",
+            direction=self.direction,
+            command=self.command,
+            is_leader=True,
         )
         self.active_task = Task.objects.create(
             project=self.project,
@@ -220,3 +229,20 @@ class LogicStatusChangeTests(BaseTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, "/accounts/login/?next=/task/1/assign/")
 
+
+class LogicProjectAndTaskInArchiveTests(BaseTestCase):
+    def test_if_the_project_relocate_to_archive(self):
+        self.client.force_login(self.leader_worker)
+        project = self.project
+        response = self.client.post(reverse("workspace:project-archive", kwargs={"pk": project.id}))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Archive.objects.filter(project_id=project.id, worker_id=None, task_id=None).exists())
+
+    def test_if_the_task_relocate_to_archive(self):
+        self.client.force_login(self.leader_worker)
+        task = self.task_assigned_to_worker
+        response = self.client.post(reverse("workspace:task-in-archive", kwargs={"pk": task.id}))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Archive.objects.filter(task=task).exists())
