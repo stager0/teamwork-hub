@@ -4,8 +4,7 @@ from django.urls import reverse
 
 from workspace.models import Direction, Project, Command, Task, TaskType
 
-
-class TaskViewsTest(TestCase):
+class BaseTestCase(TestCase):
     def setUp(self):
         self.task_type = TaskType.objects.create(
             name="Bag"
@@ -64,9 +63,41 @@ class TaskViewsTest(TestCase):
             github_link="https://github.com",
             link_to_solution="https://solution.com"
         )
+        self.task_archive = Task.objects.create(
+            project=self.project,
+            title="test_archive_task",
+            description="The task is already done",
+            task_type=self.task_type,
+            status="done",
+            stage_of_execution="100",
+            execution_status="100",
+            assigned_to=self.worker,
+            created_at="2000-01-01",
+            direction=self.direction,
+            deadline="2026-03-05",
+            github_link="https://github.com",
+            link_to_solution="https://solution.com"
+        )
+        self.task_assigned_to_worker = Task.objects.create(
+            project=self.project,
+            title="test_task_with_status_in_progress",
+            description="test task in progress",
+            task_type=self.task_type,
+            status="in_progress",
+            stage_of_execution="50",
+            execution_status="37",
+            assigned_to=self.worker,
+            created_at="2025-01-01",
+            direction=self.direction,
+            deadline="2026-03-05",
+            github_link="https://github.com",
+            link_to_solution=None,
+        )
 
         self.client.login(username="test_username", password="1qazcde3")
 
+
+class TasksListAndTaskReviewListTests(BaseTestCase):
 
     def test_tasks_list_view_status(self):
         response = self.client.get(reverse("workspace:project-tasks-list", kwargs={"project_id": self.project.id}))
@@ -107,4 +138,33 @@ class TaskViewsTest(TestCase):
     def test_render_template_tasks_list_view(self):
         response = self.client.get(reverse("workspace:project-tasks-list", kwargs={"project_id": self.project.id}))
         self.assertTemplateUsed(response, "workspace/tasks-list.html")
+
+
+class UserTasksListTests(BaseTestCase):
+    def test_if_tasks_assigned_to_user_are_in_current_tasks(self):
+        response = self.client.get(reverse("workspace:user-tasks-list", kwargs={"pk": self.worker.pk}))
+        tasks = response.context["tasks"]
+        for task in tasks:
+            self.assertIn("test_task_with_status_in_progress", task.title)
+
+    def test_if_tasks_assigned_to_worker_have_in_progress_status(self):
+        response = self.client.get(reverse("workspace:user-tasks-list", kwargs={"pk": self.worker.pk}))
+        tasks = response.context["tasks"]
+        for task in tasks:
+            self.assertIn("in_progress", task.status)
+
+    def test_if_task_title_leads_to_task_page(self):
+        response = self.client.get(reverse("workspace:user-tasks-list", kwargs={"pk": self.worker.pk}))
+        tasks = response.context["tasks"]
+        for task in tasks:
+            expected_url = reverse("workspace:task-detail", kwargs={"pk": task.id})
+            self.assertContains(response, f'href="{expected_url}"')
+
+    def test_task_detail_page_returns_200_and_contains_task_title(self):
+        task = self.task_assigned_to_worker
+        url = reverse("workspace:task-detail", kwargs={"pk": task.id})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, task.title)
 
