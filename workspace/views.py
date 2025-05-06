@@ -288,10 +288,11 @@ class TaskUserArchiveView(LoginRequiredMixin, generic.ListView):
 def task_in_archive(request: HttpRequest, pk: int) -> HttpResponse:
     task = get_object_or_404(Task.objects.select_related("project__command"), pk=pk)
     user = request.user
+    worker = task.assigned_to_id
     project_id = task.project_id
     if user.is_leader:
         Archive.objects.create(
-            worker_id=user.id,
+            worker_id=worker,
             project_id=project_id,
             task=task,
         )
