@@ -7,9 +7,20 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.views import generic
 
-from workspace.forms import WorkerCreationForm, WorkerLoginForm, ProjectsTitleSearchForm, TaskCreationForm, \
-    TaskUpdateForm, ProjectListCreationForm, TaskChangeExecutionForm, TaskForm, TaskLinkForm, UserUpdateForm
-from workspace.models import Project, Task, Archive
+from workspace.forms import (
+    WorkerCreationForm,
+    WorkerLoginForm,
+    ProjectsTitleSearchForm,
+    TaskCreationForm,
+    TaskUpdateForm,
+    ProjectListCreationForm,
+    TaskChangeExecutionForm,
+    TaskForm,
+    TaskLinkForm,
+    UserUpdateForm,
+)
+from workspace.models import Project, Task, Archive, Direction, Command, TaskType
+
 
 User = get_user_model()
 
@@ -20,7 +31,7 @@ def index(request: HttpRequest) -> HttpResponse:
     context = {
         "count_of_workers": User.objects.count(),
         "count_of_projects": Project.objects.count(),
-        "count_of_users_tasks": Archive.objects.filter(worker_id=user.id).count()
+        "count_of_users_tasks": Archive.objects.filter(worker_id=user.id).count(),
     }
     return render(request, "index.html", context=context)
 
@@ -39,11 +50,13 @@ class CustomLoginView(LoginView):
     success_url = reverse_lazy("index")
 
 
-# -----------------USERS------------------
 class UserDetailView(LoginRequiredMixin, generic.DetailView):
     model = User
     template_name = "workspace/user_detail.html"
     context_object_name = "users"
+
+    def get_queryset(self):
+        return super().get_queryset().select_related("direction", "command")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -58,8 +71,14 @@ class UsersListView(LoginRequiredMixin, generic.ListView):
 
     def get_context_data(self):
         context = super().get_context_data()
-        context["code_dict"] = {user.id: user.command.code for user in User.objects.all()}
+        context["code_dict"] = {
+            user.id: user.command.code
+            for user in User.objects.all().select_related("command")
+        }
         return context
+
+    def get_queryset(self):
+        return User.objects.all().select_related("direction", "command")
 
 
 class UserTasksListView(LoginRequiredMixin, generic.ListView):
@@ -69,15 +88,18 @@ class UserTasksListView(LoginRequiredMixin, generic.ListView):
 
     def get_queryset(self):
         user_id = self.kwargs["pk"]
-        user_tasks_list = Task.objects.filter(assigned_to=user_id)
+        user_tasks_list = Task.objects.filter(assigned_to=user_id).select_related(
+            "project", "assigned_to", "direction", "task_type"
+        )
         return user_tasks_list.filter(execution_status__lt=100)
 
-    def get_context_data(
-            self, *, object_list=..., **kwargs
-    ):
+    def get_context_data(self, *, object_list=..., **kwargs):
         context = super().get_context_data(**kwargs)
         user = get_user_model().objects.get(id=self.kwargs["pk"])
         context["user"] = user
+        context["archive_users_ids"] = Archive.objects.values_list(
+            "worker_id", flat=True
+        )
         return context
 
 
@@ -86,25 +108,29 @@ class UserUpdateView(generic.UpdateView):
     template_name = "workspace/user_update.html"
     form_class = UserUpdateForm
 
+    def get_queryset(self):
+        return super().get_queryset().select_related("direction", "command")
+
     def get_success_url(self):
         return reverse("workspace:workers-list")
 
 
-# ---------------------PROJECTS
 class ProjectsArchivedListView(LoginRequiredMixin, generic.ListView):
     model = Project
     template_name = "workspace/archived-projects.html"
     context_object_name = "projects"
 
     def get_queryset(self):
-        archived_project_ids = Archive.objects.filter(task_id=None, worker_id=None).values_list("project_id", flat=True)
+        archived_project_ids = Archive.objects.filter(
+            task_id=None, worker_id=None
+        ).values_list("project_id", flat=True)
         return Project.objects.filter(id__in=archived_project_ids)
 
-    def get_context_data(
-            self, *, object_list=..., **kwargs
-    ):
+    def get_context_data(self, *, object_list=..., **kwargs):
         context = super().get_context_data(**kwargs)
-        archived_projects = Archive.objects.filter(task_id=None)
+        archived_projects = Archive.objects.filter(
+            task_id=None, worker_id=None
+        ).select_related("project")
         context["archived_projects"] = archived_projects
         return context
 
@@ -117,23 +143,24 @@ class ProjectsListView(LoginRequiredMixin, generic.ListView):
     def get_queryset(self):
         user = self.request.user
         title = self.request.GET.get("title")
-        archived_projects_ids = Archive.objects.filter(worker_id=None, task_id=None).values_list("project_id",
-                                                                                                 flat=True)
-        if title:
-            return Project.objects.filter(command=user.command, title__icontains=title).exclude(
-                id__in=archived_projects_ids)
-        return Project.objects.filter(command=user.command).exclude(id__in=archived_projects_ids)
+        archived_projects_ids = Archive.objects.filter(
+            worker_id=None, task_id=None
+        ).values_list("project_id", flat=True)
+        queryset = (
+            Project.objects.select_related("command")
+            .filter(command=user.command)
+            .exclude(id__in=archived_projects_ids)
+        )
 
-    def get_context_data(
-            self, *, object_list=..., **kwargs
-    ):
+        if title:
+            queryset = queryset.filter(title__icontains=title)
+
+        return queryset
+
+    def get_context_data(self, *, object_list=..., **kwargs):
         context = super().get_context_data(**kwargs)
         title = self.request.GET.get("title", "")
-        context["form"] = ProjectsTitleSearchForm(
-            initial={
-                "title": title
-            }
-        )
+        context["form"] = ProjectsTitleSearchForm(initial={"title": title})
         user = self.request.user
         context["create_form"] = ProjectListCreationForm(
             initial={"command": user.command.name}
@@ -147,14 +174,23 @@ class ProjectsDetailView(LoginRequiredMixin, generic.DetailView):
     template_name = "workspace/projects-list-detail.html"
     context_object_name = "project"
 
+    def get_queryset(self):
+        return super().get_queryset().select_related("command")
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        archived_projects_ids = Archive.objects.filter(worker_id=None, task_id=None).values_list("project_id",
-                                                                                                 flat=True)
+        archived_projects_ids = Archive.objects.filter(
+            worker_id=None, task_id=None
+        ).values_list("project_id", flat=True)
         context["archived_projects_ids"] = list(archived_projects_ids)
-        archives = Archive.objects.filter(task_id=None, worker_id=None).select_related("project")
-        context["archived_projects_date"] = {archive.project.id: archive.end_date for archive in
-                                             archives if archive.project is not None}
+        archives = Archive.objects.filter(task_id=None, worker_id=None).select_related(
+            "project"
+        )
+        context["archived_projects_date"] = {
+            archive.project.id: archive.end_date
+            for archive in archives
+            if archive.project is not None
+        }
         return context
 
 
@@ -171,6 +207,9 @@ class ProjectsListDeleteView(LoginRequiredMixin, generic.DeleteView):
     model = Project
     template_name = "workspace/projects-list-confirm-delete.html"
 
+    def get_queryset(self):
+        return super().get_queryset().select_related("command")
+
     def get_success_url(self):
         return reverse("workspace:projects-list")
 
@@ -181,6 +220,9 @@ class ProjectsListUpdateView(LoginRequiredMixin, generic.UpdateView):
     template_name = "workspace/projects-list-update.html"
     context_object_name = "project"
 
+    def get_queryset(self):
+        return super().get_queryset().select_related("command")
+
     def get_success_url(self):
         return reverse("workspace:projects-list")
 
@@ -189,6 +231,13 @@ class ProjectsTaskDetailView(LoginRequiredMixin, generic.DetailView):
     model = Task
     template_name = "workspace/projects-list-detail.html"
     context_object_name = "task"
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related("project__command", "assigned_to", "direction", "task_type")
+        )
 
     def get_object(self):
         project_id = self.kwargs["project_id"]
@@ -216,22 +265,28 @@ class TaskUserArchiveView(LoginRequiredMixin, generic.ListView):
 
     def get_queryset(self):
         user_id = self.request.user.id
-        archived_tasks_ids = Archive.objects.filter(worker_id=user_id).values_list("task_id", flat=True)
-        return Task.objects.filter(id__in=archived_tasks_ids).filter(execution_status=100)
+        archived_tasks_ids = Archive.objects.filter(worker_id=user_id).values_list(
+            "task_id", flat=True
+        )
+        return (
+            Task.objects.filter(id__in=archived_tasks_ids)
+            .filter(execution_status=100)
+            .select_related("project", "assigned_to", "direction", "task_type")
+        )
 
-    def get_context_data(
-            self, *, object_list=..., **kwargs
-    ):
+    def get_context_data(self, *, object_list=..., **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         context["user"] = user
-        context["archive_users_ids"] = Archive.objects.values_list("worker_id", flat=True)
+        context["archive_users_ids"] = Archive.objects.values_list(
+            "worker_id", flat=True
+        )
         return context
 
 
 @login_required
 def task_in_archive(request: HttpRequest, pk: int) -> HttpResponse:
-    task = get_object_or_404(Task, pk=pk)
+    task = get_object_or_404(Task.objects.select_related("project__command"), pk=pk)
     user = request.user
     project_id = task.project_id
     if user.is_leader:
@@ -262,7 +317,11 @@ class TasksListView(LoginRequiredMixin, generic.ListView):
     def get_queryset(self):
         project_id = self.kwargs.get("project_id")
         command_id = self.request.user.command_id
-        return Task.objects.filter(project_id=project_id, project__command_id=command_id).filter(stage_of_execution__lt=76)
+        return (
+            Task.objects.filter(project_id=project_id, project__command_id=command_id)
+            .filter(stage_of_execution__lt=76)
+            .select_related("project", "assigned_to", "task_type")
+        )
 
 
 class TaskCreateView(LoginRequiredMixin, generic.CreateView):
@@ -270,7 +329,10 @@ class TaskCreateView(LoginRequiredMixin, generic.CreateView):
     form_class = TaskCreationForm
 
     def get_success_url(self):
-        return reverse("workspace:project-tasks-list", kwargs={"project_id": self.object.project.pk})
+        return reverse(
+            "workspace:project-tasks-list",
+            kwargs={"project_id": self.object.project.pk},
+        )
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -283,22 +345,49 @@ class TaskUpdateView(LoginRequiredMixin, generic.UpdateView):
     template_name = "workspace/task-update.html"
     form_class = TaskUpdateForm
 
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related("project__command", "assigned_to", "direction", "task_type")
+        )
+
     def get_success_url(self):
-        return reverse("workspace:project-tasks-list", kwargs={"project_id": self.object.project.pk})
+        return reverse(
+            "workspace:project-tasks-list",
+            kwargs={"project_id": self.object.project.pk},
+        )
 
 
 class TaskDeleteView(LoginRequiredMixin, generic.DeleteView):
     model = Task
     template_name = "workspace/task-confirm-delete.html"
 
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related("project__command", "assigned_to", "direction", "task_type")
+        )
+
     def get_success_url(self):
-        return reverse("workspace:project-tasks-list", kwargs={"project_id": self.object.project.pk})
+        return reverse(
+            "workspace:project-tasks-list",
+            kwargs={"project_id": self.object.project.pk},
+        )
 
 
 class TaskDetailView(LoginRequiredMixin, generic.DetailView):
     model = Task
     context_object_name = "task"
     template_name = "workspace/task-detail.html"
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related("project__command", "assigned_to", "direction", "task_type")
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -313,6 +402,13 @@ class TaskExecutionChangeView(LoginRequiredMixin, generic.UpdateView):
     template_name = "workspace/task-detail.html"
     context_object_name = "task"
 
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related("project__command", "assigned_to", "direction", "task_type")
+        )
+
     def get_success_url(self):
         return reverse("workspace:task-detail", kwargs={"pk": self.object.pk})
 
@@ -322,6 +418,13 @@ class TaskModalUpdateView(LoginRequiredMixin, generic.UpdateView):
     template_name = "workspace/task-detail.html"
     form_class = TaskForm
     context_object_name = "task"
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related("project__command", "assigned_to", "direction", "task_type")
+        )
 
     def get_success_url(self):
         return reverse("workspace:task-detail", kwargs={"pk": self.object.pk})
@@ -336,15 +439,16 @@ class TaskReviewListView(LoginRequiredMixin, generic.ListView):
         user = self.request.user
         if user.command_id:
             return Task.objects.filter(
-                stage_of_execution=75,
-                assigned_to__command_id=user.command_id
-            )
-        return Task.objects.all()
+                stage_of_execution=75, assigned_to__command_id=user.command_id
+            ).select_related("project", "assigned_to", "direction", "task_type")
+        return Task.objects.all().select_related(
+            "project", "assigned_to", "direction", "task_type"
+        )
 
 
 @login_required
 def assign_to_task(request: HttpRequest, pk: int) -> HttpResponse:
-    task = get_object_or_404(Task, id=pk)
+    task = get_object_or_404(Task.objects.select_related("project__command"), id=pk)
     user = request.user
     if task.assigned_to == user:
         task.assigned_to = None
@@ -367,7 +471,10 @@ class LinkInputView(LoginRequiredMixin, generic.FormView):
 
     def form_valid(self, form):
         link = form.cleaned_data["link"]
-        task = Task.objects.get(id=self.request.GET.get("pk"))
+        task = get_object_or_404(
+            Task.objects.select_related("project__command"),
+            pk=self.request.GET.get("pk"),
+        )
         task.link_to_solution = link
         task.save()
         return super().form_valid(form)
