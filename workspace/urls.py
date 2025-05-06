@@ -4,7 +4,8 @@ from workspace.views import index, ProjectsListView, ProjectsListCreateView, Pro
     ProjectsListDeleteView, \
     TasksListView, UserDetailView, TaskUpdateView, TaskDeleteView, TaskCreateView, TaskDetailView, UsersListView, \
     assign_to_task, TaskExecutionChangeView, ProjectsDetailView, TaskModalUpdateView, ProjectsTaskDetailView, \
-    UserTasksListView, ProjectsArchivedListView, TaskUserArchiveView, task_in_archive, TaskReviewListView
+    UserTasksListView, ProjectsArchivedListView, TaskUserArchiveView, task_in_archive, TaskReviewListView, \
+    ProjectArchiveView, UserUpdateView
 
 app_name = "workspace"
 
@@ -14,14 +15,15 @@ urlpatterns = [
     path("user_detail/<int:pk>/", UserDetailView.as_view(), name="user-detail"),
     path("users-list/", UsersListView.as_view(), name="workers-list"),
     path("user-tasks-list/<int:pk>/", UserTasksListView.as_view(), name="user-tasks-list"),
+    path("user/<int:pk>/update/", UserUpdateView.as_view(), name="user-update"),
 
     path("projects-list/", ProjectsListView.as_view(), name="projects-list"),
     path("projects-list/<int:pk>/detail/", ProjectsTaskDetailView.as_view(), name="projects-list-detail"),
     path("projects-list/<int:pk>/update/", ProjectsListUpdateView.as_view(), name="projects-list-update"),
     path("projects-list/create/", ProjectsListCreateView.as_view(), name="projects-list-create"),
     path("projects-list/<int:pk>/delete/", ProjectsListDeleteView.as_view(), name="projects-list-delete"),
+    path("project/<int:pk>/archive/", ProjectArchiveView.as_view(), name="project-archive"),
     path("projects-archieve/", ProjectsArchivedListView.as_view(), name="projects-archive"),
-
     path("projects-list/<int:project_id>/tasks/", TasksListView.as_view(), name="project-tasks-list"),
     path("projects-list/<int:pk>/", ProjectsDetailView.as_view(), name="project-detail"),
 
