@@ -4,6 +4,7 @@ from django.urls import reverse
 
 from workspace.models import Direction, Project, Command, Task, TaskType
 
+
 class BaseTestCase(TestCase):
     def setUp(self):
         self.task_type = TaskType.objects.create(
@@ -167,4 +168,25 @@ class UserTasksListTests(BaseTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, task.title)
+
+
+class UserArchiveTasksTests(BaseTestCase):
+    def test_if_task_with_status_code_review_is_in_user_archive_list(self):
+        response = self.client.get(reverse("workspace:user-archive-tasks", kwargs={"pk": self.worker.id}))
+        tasks = response.context["tasks"]
+        for task in tasks:
+            self.assertContains(response, "test_task_for_review")
+
+    def test_if_task_with_status_done_is_in_user_archive_list(self):
+        response = self.client.get(reverse("workspace:user-archive-tasks", kwargs={"pk": self.worker.id}))
+        tasks = response.context["tasks"]
+        for task in tasks:
+            self.assertContains(response, "test_archive_task")
+
+    def test_task_with_status_to_do_and_in_progress_are_not_in_user_tasks_archive(self):
+        response = self.client.get(reverse("workspace:user-archive-tasks", kwargs={"pk": self.worker.id}))
+        tasks = response.context["tasks"]
+        for task in tasks:
+            self.assertNotContains(response, "To Do")
+            self.assertNotContains(response, "In Progress")
 
