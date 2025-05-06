@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.template.context_processors import request
 from django.test import TestCase
 from django.urls import reverse
 
@@ -189,4 +190,33 @@ class UserArchiveTasksTests(BaseTestCase):
         for task in tasks:
             self.assertNotContains(response, "To Do")
             self.assertNotContains(response, "In Progress")
+
+
+class LogicStatusChangeTests(BaseTestCase):
+    def test_if_the_status_changes_when_user_takes_task(self):
+        task = self.active_task
+        response = self.client.get(reverse("workspace:assign-to-task", kwargs={"pk": task.id}))
+
+        task.refresh_from_db()
+        self.assertEqual(task.stage_of_execution, 50)
+        self.assertEqual(task.status, "in_progress")
+        self.assertEqual(task.assigned_to, self.worker)
+
+    def test_if_the_status_changes_when_user_unassign_the_task(self):
+        task = self.task_assigned_to_worker
+        response = self.client.get(reverse("workspace:assign-to-task", kwargs={"pk": task.id}))
+
+        task.refresh_from_db()
+        self.assertEqual(task.stage_of_execution, 25)
+        self.assertEqual(task.status, "to_do")
+        self.assertEqual(task.execution_status, 0)
+        self.assertNotEqual(task.assigned_to, self.worker)
+
+    def test_when_the_user_is_not_authorized_and_trys_to_take_the_task(self):
+        self.client.logout()
+        task = self.active_task
+        response = self.client.get(reverse("workspace:assign-to-task", kwargs={"pk": task.id}))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, "/accounts/login/?next=/task/1/assign/")
 
