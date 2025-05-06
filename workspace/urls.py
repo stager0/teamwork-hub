@@ -36,7 +36,6 @@ urlpatterns = [
     path("task/<int:pk>/assign/", assign_to_task, name="assign-to-task"),
     path("task/<int:pk>/change-task-execution/", TaskExecutionChangeView.as_view(), name="change-task-execution"),
     path("task/<int:pk>/archive-tasks/", TaskUserArchiveView.as_view(), name="user-archive-tasks"),
-    path("task/<int:pk>/", task_in_archive , name="task-in-archive"),
+    path("task/<int:pk>/", task_in_archive, name="task-in-archive"),
     path("tasks-review-list/", TaskReviewListView.as_view(), name="tasks-review-list")
-
 ]

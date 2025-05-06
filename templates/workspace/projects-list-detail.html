@@ -12,6 +12,7 @@
 
       <div class="col-auto">
         {% if project.id not in archived_projects_ids %}
+          {% if user.is_leader %}
         <a href="{% url 'workspace:projects-list-update' project.id %}" class="btn btn-success btn-sm me-1">Edit
           Project</a>
         <a href="{% url 'workspace:projects-list-delete' project.id %}" class="btn btn-danger btn-sm">Delete Project</a>
@@ -19,6 +20,7 @@
           {% csrf_token %}
           <button type="submit" class="btn btn-primary btn-sm">Archive the Project</button>
         </form>
+            {% endif %}
         {% endif %}
       </div>
     </div>

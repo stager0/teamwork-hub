@@ -1,7 +1,7 @@
+from click import command
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django import forms
-
 
 from workspace.models import Command, Direction, Task, Project
 
@@ -31,7 +31,6 @@ class WorkerCreationForm(UserCreationForm):
         model = get_user_model()
         fields = ["username", "first_name", "last_name", "email", "password1", "password2", "direction", "command_code"]
 
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["username"].widget.attrs["placeholder"] = "Username"
@@ -42,7 +41,6 @@ class WorkerCreationForm(UserCreationForm):
         self.fields["command_code"].widget.attrs["placeholder"] = "TeamCode (length - 10)"
         self.fields["direction"].widget.attrs["placeholder"] = "Direction"
         self.fields["email"].widget.attrs["placeholder"] = "Email"
-
 
     def save(self, commit=True):
         worker = super().save(commit=False)
@@ -57,7 +55,6 @@ class WorkerCreationForm(UserCreationForm):
         command, created = Command.objects.get_or_create(
             code=code,
         )
-
         worker.command = command
         worker.is_leader = created
 
@@ -80,6 +77,12 @@ class WorkerLoginForm(AuthenticationForm):
         self.fields["password"].widget.attrs["placeholder"] = "Password"
 
 
+class UserUpdateForm(forms.ModelForm):
+    class Meta:
+        model = get_user_model()
+        fields = ["username", "first_name", "last_name", "email", "direction"]
+
+
 class ProjectsTitleSearchForm(forms.Form):
     title = forms.CharField(
         max_length=55,
@@ -100,10 +103,20 @@ class ProjectListCreationForm(forms.ModelForm):
         fields = ["title", "description", "start_date", "command"]
 
 
+
 class TaskCreationForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ["project", "title", "description", "task_type", "direction", "deadline", "github_link"]
+        fields = ["project", "title", "description", "task_type", "assigned_to", "direction", "deadline", "github_link"]
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+
+        if user:
+            self.fields["assigned_to"].queryset = get_user_model().objects.filter(command__code=user.command.code)
+            self.fields["assigned_to"].required = False
+
 
 
 class TaskUpdateForm(forms.ModelForm):
@@ -120,6 +133,7 @@ class TaskChangeExecutionForm(forms.ModelForm):
             attrs={"placeholder": "https://github.com"}
         )
     )
+
     class Meta:
         model = Task
         fields = ["execution_status", "link_to_solution"]
