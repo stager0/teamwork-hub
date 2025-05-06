@@ -129,6 +129,9 @@
         {% if task.link_to_solution %}
           <p><strong>{% trans "Link to Solution" %}: </strong><a href="{{ task.link_to_solution }}" target="_blank">{{ task.link_to_solution }}</a></p>
         {% endif %}
+        {% if task.github_link %}
+          <p><strong>GitHub link to task: </strong> <a href="{{ task.github_link }}">{{ task.github_link }}</a></p>
+        {% endif %}
 
       </div>
     </div>

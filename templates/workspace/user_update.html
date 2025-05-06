@@ -1,0 +1,39 @@
+{% extends "layouts/base-presentation.html" %}
+{% load crispy_forms_filters %}
+{% load i18n %}
+
+{% block title %}{% trans "Update User" %}{% endblock %}
+
+{% block content %}
+  <div class="container mt-5 mb-5 pt-6">
+
+    <div class="row mb-4">
+      <div class="col">
+        <h1 class="text-primary"><i class="fas fa-user-edit me-2"></i>{% trans "Update User Information" %}</h1>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="card shadow-lg border-0">
+      <div class="card-header">
+        <h4 class="mb-0">{% trans "Edit Profile" %}</h4>
+      </div>
+      <div class="card-body">
+        <form method="post" action="">
+          {% csrf_token %}
+
+          {{ form|crispy }}
+
+          <div class="mt-4">
+            <button type="submit" class="btn btn-success me-2">{% trans "Save Changes" %}</button>
+            {% if user.id %}
+              <a href="{% url 'workspace:user-detail' user.id %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+{% endblock content %}
