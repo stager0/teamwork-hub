@@ -152,8 +152,9 @@ class ProjectsDetailView(LoginRequiredMixin, generic.DetailView):
         archived_projects_ids = Archive.objects.filter(worker_id=None, task_id=None).values_list("project_id",
                                                                                                  flat=True)
         context["archived_projects_ids"] = list(archived_projects_ids)
+        archives = Archive.objects.filter(task_id=None, worker_id=None).select_related("project")
         context["archived_projects_date"] = {archive.project.id: archive.end_date for archive in
-                                             Archive.objects.filter(task_id=None, worker_id=None)}
+                                             archives if archive.project is not None}
         return context
 
 
@@ -216,7 +217,7 @@ class TaskUserArchiveView(LoginRequiredMixin, generic.ListView):
     def get_queryset(self):
         user_id = self.request.user.id
         archived_tasks_ids = Archive.objects.filter(worker_id=user_id).values_list("task_id", flat=True)
-        return Task.objects.filter(id__in=archived_tasks_ids)
+        return Task.objects.filter(id__in=archived_tasks_ids).filter(execution_status=100)
 
     def get_context_data(
             self, *, object_list=..., **kwargs
@@ -261,7 +262,7 @@ class TasksListView(LoginRequiredMixin, generic.ListView):
     def get_queryset(self):
         project_id = self.kwargs.get("project_id")
         command_id = self.request.user.command_id
-        return Task.objects.filter(project_id=project_id, project__command_id=command_id)
+        return Task.objects.filter(project_id=project_id, project__command_id=command_id).filter(stage_of_execution__lt=76)
 
 
 class TaskCreateView(LoginRequiredMixin, generic.CreateView):
