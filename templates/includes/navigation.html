@@ -1,0 +1,141 @@
+<div class="container position-sticky z-index-sticky top-0">
+  <div class="row">
+    <div class="col-12">
+      <nav class="navbar navbar-expand-lg blur blur-rounded top-0 z-index-fixed shadow position-absolute my-3 py-2 start-0 end-0 mx-4">
+        <div class="container-fluid">
+          <a class="navbar-brand font-weight-bolder ms-sm-3 text-nowrap"
+             href="/" rel="tooltip" data-placement="bottom">
+            TeamWork Hub | System
+          </a>
+          <button class="navbar-toggler shadow-none ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#navigation" aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon mt-2">
+              <span class="navbar-toggler-bar bar1"></span>
+              <span class="navbar-toggler-bar bar2"></span>
+              <span class="navbar-toggler-bar bar3"></span>
+            </span>
+          </button>
+          <div class="collapse navbar-collapse pt-3 pb-2 py-lg-0" id="navigation">
+            {# Main navigation links, now also aligned to the right using ms-auto #}
+            {# Removed me-auto, added ms-auto #}
+            <ul class="navbar-nav navbar-nav-hover ms-auto">
+
+              <li class="nav-item dropdown dropdown-hover mx-2">
+                <a class="nav-link ps-2 d-flex justify-content-between cursor-pointer align-items-center text-nowrap" id="dropdownMenuProjects" data-bs-toggle="dropdown" aria-expanded="false">
+                  Projects
+                  <img src="/static/assets/img/down-arrow-dark.svg" alt="down-arrow" class="arrow ms-1">
+                </a>
+                <div class="dropdown-menu dropdown-menu-animation dropdown-md p-3 border-radius-lg mt-0 mt-lg-3" aria-labelledby="dropdownMenuProjects">
+                  <h6 class="dropdown-header text-dark font-weight-bolder d-flex justify-content-center align-items-center px-0">
+                     All Projects
+                  </h6>
+                  <a href="{% url 'workspace:projects-list' %}" class="dropdown-item border-radius-md">
+                    Projects List
+                  </a>
+                </div>
+              </li>
+
+              {% if user.is_authenticated and user.is_leader %}
+              <li class="nav-item dropdown dropdown-hover mx-2">
+                <a class="nav-link ps-2 d-flex justify-content-between cursor-pointer align-items-center text-nowrap" id="dropdownMenuReview" data-bs-toggle="dropdown" aria-expanded="false">
+                  Review Tasks
+                  <img src="/static/assets/img/down-arrow-dark.svg" alt="down-arrow" class="arrow ms-1">
+                </a>
+                <div class="dropdown-menu dropdown-menu-animation dropdown-md p-3 border-radius-lg mt-0 mt-lg-3" aria-labelledby="dropdownMenuReview">
+                  <h6 class="dropdown-header text-dark font-weight-bolder d-flex justify-content-center align-items-center px-0">
+                     Verification Queue
+                  </h6>
+                  <a href="{% url 'workspace:tasks-review-list' %}" class="dropdown-item border-radius-md">
+                    Tasks Pending Review
+                  </a>
+                </div>
+              </li>
+              {% endif %}
+
+              {% if user.is_authenticated %}
+              <li class="nav-item dropdown dropdown-hover mx-2">
+                <a class="nav-link ps-2 d-flex justify-content-between cursor-pointer align-items-center text-nowrap" id="dropdownMenuMyTasks" data-bs-toggle="dropdown" aria-expanded="false">
+                  My Tasks
+                  <img src="/static/assets/img/down-arrow-dark.svg" alt="down-arrow" class="arrow ms-1">
+                </a>
+                 <div class="dropdown-menu dropdown-menu-animation dropdown-md p-3 border-radius-lg mt-0 mt-lg-3" aria-labelledby="dropdownMenuMyTasks">
+                   <h6 class="dropdown-header text-dark font-weight-bolder d-flex justify-content-center align-items-center px-0">
+                      My Assignments
+                   </h6>
+                   <a href="{% url 'workspace:user-tasks-list' user.id %}" class="dropdown-item border-radius-md">
+                     Current Tasks
+                   </a>
+                    <a href="{% url 'workspace:user-archive-tasks' user.id %}" class="dropdown-item border-radius-md">
+                      Task Archive
+                    </a>
+                 </div>
+              </li>
+              {% endif %}
+
+              {% if user.is_authenticated and user.command %}
+              <li class="nav-item dropdown dropdown-hover mx-2">
+                <a class="nav-link ps-2 d-flex justify-content-between cursor-pointer align-items-center text-nowrap" id="dropdownMenuCommand" data-bs-toggle="dropdown" aria-expanded="false">
+                  Our Command
+                  <img src="/static/assets/img/down-arrow-dark.svg" alt="down-arrow" class="arrow ms-1">
+                </a>
+                <div class="dropdown-menu dropdown-menu-animation dropdown-md p-3 border-radius-lg mt-0 mt-lg-3" aria-labelledby="dropdownMenuCommand">
+                  <h6 class="dropdown-header text-dark font-weight-bolder d-flex justify-content-center align-items-center px-0">
+                     Command Details
+                  </h6>
+                  <a href="{% url 'workspace:workers-list' %}" class="dropdown-item border-radius-md">
+                    Team Members
+                  </a>
+                   <a href="{% url 'workspace:projects-archive' %}" class="dropdown-item border-radius-md">
+                     Project Archive
+                   </a>
+                 </div>
+              </li>
+              {% endif %}
+
+            </ul>
+
+            {# Account/Auth links, also aligned to the right #}
+             {# This UL will now be next to the previous one, both aligned right #}
+             <ul class="navbar-nav ms-auto">
+               <li class="nav-item dropdown dropdown-hover mx-2">
+                 <a class="nav-link ps-2 d-flex justify-content-between cursor-pointer align-items-center text-nowrap" id="dropdownMenuAccount" data-bs-toggle="dropdown" aria-expanded="false">
+                   {% if user.is_authenticated %}
+                      {# Added placeholder icon here #}
+                      <i class="me-1 ni ni-single-02"></i>
+                      Welcome, {{ user.get_full_name|default:user.username }}
+                   {% else %}
+                      Account
+                   {% endif %}
+                   <img src="/static/assets/img/down-arrow-dark.svg" alt="down-arrow" class="arrow ms-1">
+                 </a>
+                 <div class="dropdown-menu dropdown-menu-animation dropdown-md p-3 border-radius-lg mt-0 mt-lg-3" aria-labelledby="dropdownMenuAccount">
+                   {% if user.is_authenticated %}
+                     <h6 class="dropdown-header text-dark font-weight-bolder d-flex justify-content-center align-items-center px-0">
+                        User Actions
+                     </h6>
+                     <form action="{% url 'logout' %}" method="post" class="d-inline">{% csrf_token %}
+                       <button type="submit" class="dropdown-item border-radius-md">
+                         Sign Out
+                       </button>
+                     </form>
+                   {% else %}
+                     <h6 class="dropdown-header text-dark font-weight-bolder d-flex justify-content-center align-items-center px-0">
+                        Account
+                     </h6>
+                     <a href="{% url 'login' %}" class="dropdown-item border-radius-md">
+                       Sign In
+                     </a>
+                     <a href="{% url 'register' %}" class="dropdown-item border-radius-md">
+                       Register
+                     </a>
+                   {% endif %}
+                 </div>
+               </li>
+             </ul>
+
+
+          </div>
+        </div>
+      </nav>
+    </div>
+  </div>
+</div>

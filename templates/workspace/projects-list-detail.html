@@ -1,0 +1,70 @@
+{% extends 'layouts/base-presentation.html' %}
+
+{% block title %}Project Details: {{ project.title }}{% endblock %}
+
+{% block content %}
+  <div class="container mt-5 mb-5 pt-7">
+
+    <div class="row mb-4 align-items-center">
+      <div class="col">
+        <h1>Project Details: "{{ project.title }}"</h1>
+      </div>
+
+      <div class="col-auto">
+        {% if project.id not in archived_projects_ids %}
+          {% if user.is_leader %}
+        <a href="{% url 'workspace:projects-list-update' project.id %}" class="btn btn-success btn-sm me-1">Edit
+          Project</a>
+        <a href="{% url 'workspace:projects-list-delete' project.id %}" class="btn btn-danger btn-sm">Delete Project</a>
+        <form method="post" action="{% url "workspace:project-archive" project.id %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-primary btn-sm">Archive the Project</button>
+        </form>
+            {% endif %}
+        {% endif %}
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="card">
+      <div class="card-header">
+        <h4 class="mb-0">Project Information</h4>
+      </div>
+      <div class="card-body">
+
+        <p><strong>Title:</strong> {{ project.title }}</p>
+
+        {% if project.description %}
+          <p><strong>Description:</strong> {{ project.description|safe }}</p>
+        {% endif %}
+
+        <hr>
+
+        <p><strong>Start Date:</strong> {% if project.start_date %}{{ project.start_date }}{% else %}Not set{% endif %}
+        </p>
+
+        <p><strong>Command:</strong> {% if project.command %}{{ project.command.name }}{% else %}Not assigned{% endif %}
+        </p>
+        {% load custom_filters %}
+        <p><strong>End Date:</strong> {% if project.id in archived_projects_ids %}{{ archived_projects_date|dict_get:project.id }}{% else %}This project is still active.{% endif %}</p>
+
+      </div>
+    </div>
+    {% if project.id not in archived_projects_ids %}
+      <div class="card mt-4">
+      <div class="card-header">
+        <h4 class="mb-0">Tasks in this Project</h4>
+      </div>
+      <div class="card-body">
+      <p>View all <a href="{% url 'workspace:project-tasks-list' project.id %}">tasks for this project</a>.</p>
+
+    {% else %}
+      <p>No tasks assigned to this project yet.</p>
+    {% endif %}
+    </div>
+    </div>
+
+
+  </div>
+{% endblock content %}

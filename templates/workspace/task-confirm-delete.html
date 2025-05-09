@@ -1,0 +1,44 @@
+{% extends "layouts/base-presentation.html" %}
+
+{% block title %}Confirm Deletion{% endblock %}
+
+{% block content %}
+  <div class="container py-5 pt-12">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="card border-danger">
+          <div class="card-header bg-danger text-white d-flex align-items-center">
+             <i class="fas fa-exclamation-triangle fa-lg me-2"></i>
+            <h4 class="mb-0">Confirm {{ object_type }} Deletion</h4>
+          </div>
+          <div class="card-body">
+            <p class="card-text lead">
+              Are you sure you want to delete the {{ object_type|lower }} "<strong>
+              {% if object_type == 'Project' or object_type == 'Task' %}
+                  {{ object.title }}
+              {% else %}
+                  {{ object }}
+              {% endif %}
+              </strong>"?
+            </p>
+            <p class="card-text text-danger">
+              This action cannot be undone and will permanently remove all associated data.
+            </p>
+
+            <form method="post">
+              {% csrf_token %}
+              <div class="d-flex justify-content-end mt-4">
+                <a href="{% url "workspace:task-detail" task.pk %}" class="btn btn-secondary me-2">Cancel</a>
+
+                <button type="submit" class="btn btn-danger">
+                  <i class="fas fa-trash me-1"></i> Confirm Delete
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="pb-11"></p>
+{% endblock content %}

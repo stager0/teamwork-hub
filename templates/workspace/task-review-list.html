@@ -1,0 +1,107 @@
+{% extends "layouts/base-presentation.html" %}
+{% load crispy_forms_filters %}
+
+{% block title %}Tasks Pending Review{% endblock %}
+
+{% block content %}
+  <div class="container mt-5 mb-5 pt-6">
+
+    <div class="row mb-4">
+      <div class="col">
+        <h1>Tasks Pending Review</h1>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="card">
+      <div class="card-header">
+        <h4 class="mb-0">Tasks Awaiting Verification</h4>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th class="text-center">#</th>
+                <th>Task Name</th>
+                <th>Task Direction</th>
+                <th>Project</th>
+                <th>Assigned To</th>
+                <th>Status</th>
+                <th>Progress</th>
+                <th>Link to the Solution</th>
+                <th>Confirm</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for task in tasks %}
+                <tr data-href="{% url 'workspace:task-detail' task.id %}" style="cursor: pointer;">
+                  <td class="p-0 text-center align-middle" style="background-color: white;">{{ forloop.counter }}</td>
+                  <td class="align-middle">{{ task.title }}</td>
+                  <td class="align-middle">{{ task.direction.direction }}</td>
+                  <td class="align-middle">
+                     {% if task.project %}
+                        <a href="{% url 'workspace:project-detail' task.project.id %}">{{ task.project.title }}</a>
+                     {% else %}
+                        No project
+                     {% endif %}
+                  </td>
+                   <td class="align-middle">
+                       {% if task.assigned_to %}
+                           {{ task.assigned_to.get_full_name|default:task.assigned_to.username }}
+                       {% else %}
+                           Not assigned
+                       {% endif %}
+                   </td>
+                   <td class="align-middle">{% if task.status %}{{ task.status }}{% else %}Not set{% endif %}</td>
+
+                  <td class="align-middle" style="min-width: 150px;">
+                    {% if task.stage_of_execution is not None %}
+                       <div class="progress" style="height: 15px;">
+                         <div class="progress-bar
+                        {% if task.stage_of_execution == 100 %}bg-success
+                        {% elif task.stage_of_execution >= 75 %}bg-info
+                        {% elif task.stage_of_execution >= 50 %}bg-warning
+                        {% else %}bg-danger
+                        {% endif %}"
+                              role="progressbar"
+                              style="width: {{ task.stage_of_execution }}%; height: 15px"
+                              aria-valuenow="{{ task.stage_of_execution }}"
+                              aria-valuemin="0"
+                              aria-valuemax="100">
+                            {% if task.stage_of_execution > 15 %}{{ task.stage_of_execution }}%{% endif %}
+                         </div>
+                       </div>
+                      <td class="align-middle"><a href="{{ task.link_to_solution }}" class="link-success" style="padding-left: 30%">Link</a></td>
+                      <td><a class="btn btn-success" href="{% url "workspace:task-in-archive" task.id %}">Confirm and Archive</a></td>
+                    {% else %}
+                       Not set
+                    {% endif %}
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="6" class="text-center" style="background-color: white;">No tasks pending review.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  {% block javascripts %}
+    {{ block.super }}
+    <script>
+      $(document).ready(function() {
+        $('tr[data-href]').on('click', function() {
+          window.location = $(this).data('href');
+        });
+      });
+    </script>
+  {% endblock javascripts %}
+
+{% endblock content %}

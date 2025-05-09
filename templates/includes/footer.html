@@ -1,0 +1,73 @@
+{% load static %}
+
+<footer class="footer py-5 bg-light">
+  <div class="container">
+    <div class="row">
+
+      <div class="col-lg-4 col-md-6 mb-4">
+        <h6 class="text-uppercase mb-3">TeamWork Hub</h6>
+        <p class="text-muted mb-0">
+          Your modern platform for team collaboration and project management.
+        </p>
+      </div>
+
+      <div class="col-lg-2 col-md-6 mb-4">
+        <h6 class="text-uppercase mb-3">Quick Links</h6>
+        <ul class="list-unstyled mb-0">
+          <li><a href="{% url 'workspace:projects-list' %}" class="text-muted text-decoration-none">Projects</a></li>
+          <li><a href="{% url 'workspace:workers-list' %}" class="text-muted text-decoration-none">Colleagues</a></li>
+        </ul>
+      </div>
+
+      <div class="col-lg-3 col-md-6 mb-4">
+        <h6 class="text-uppercase mb-3">Contact Us</h6>
+        <address class="text-muted mb-0">
+          <p class="mb-1"><i class="fas fa-map-marker-alt me-2"></i> 123 Teamwork St,<br>Collaboration City, TW 45678</p>
+          <p class="mb-1"><i class="fas fa-phone me-2"></i> +1 234 567 8900</p>
+          <p class="mb-0"><i class="fas fa-envelope me-2"></i> info@teamworkhub.com</p>
+        </address>
+      </div>
+
+      <div class="col-lg-3 col-md-6 mb-4">
+        <h6 class="text-uppercase mb-3 text-lg-start text-center">Connect with Us</h6>
+        <ul class="list-unstyled d-flex justify-content-lg-start justify-content-center align-items-center gap-3 mb-0 ps-0">
+          <li class="p-5"></li>
+          <li>
+            <a href="#" class="text-muted social-icon" aria-label="Twitter">
+              <i class="fab fa-twitter fa-lg"></i>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="text-muted social-icon" aria-label="Facebook">
+              <i class="fab fa-facebook-f fa-lg"></i>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="text-muted social-icon" aria-label="Instagram">
+              <i class="fab fa-instagram fa-lg"></i>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/stager0" target="_blank" rel="noopener" class="text-muted social-icon" aria-label="GitHub">
+              <i class="fab fa-github fa-lg"></i>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <hr class="my-4">
+
+    <div class="row">
+      <div class="col-12 text-center">
+        <p class="text-muted mb-0">
+          © {% now "Y" %} TeamWork Hub | System | Coded by
+          <a href="https://github.com/stager0" target="_blank" class="text-muted text-decoration-none">Andrii Shtaher</a>.
+          All rights reserved.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</footer>
