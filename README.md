@@ -305,3 +305,28 @@ python manage.py runserver
 ```bash
 python manage.py test
 ```
+
+## Users  (username -> password)
+Use the following credentials to log in as different roles:
+
+### Leaders:
+- pm_lead -> 1qazcde3
+
+- qa_lead -> 1qazcde3
+
+- design_lead -> 1qazcde3
+
+- frontend_lead -> 1qazcde3
+
+- backend_lead -> 1qazcde3
+
+### Users:
+- worker_pm_01 -> 1qazcde3
+
+- worker_qa_01 -> 1qazcde3
+
+- worker_design_01 -> 1qazcde3
+
+- worker_fe_01 -> 1qazcde3
+
+- worker_be_01 -> 1qazcde3
