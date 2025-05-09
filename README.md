@@ -259,29 +259,49 @@ Logs out the user and redirects to the login page.
 
 
 ## Clone the repo
+```bash
 git clone https://github.com/stager0/teamwork-hub.git
 cd teamwork-hub
+```
+
 
 ## Create and activate virtual environment
+```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
+```
+## Environment Variables
+Step 1: Copy the sample file
+```bash
+cp .env.sample .env
+```
+Step 2: Open .env and set the values.
+
 ## Install dependencies
+```bash
 pip install -r requirements.txt
+```
 
 ## Apply database migrations
+```bash
 python manage.py migrate
+```
 
 ## 👤 Create a Superuser (for Admin Access)
-
+```bash
 python manage.py createsuperuser
-
+```
 or load test data using:
-
+```bash
 python manage.py loaddata fixture.db.json
+```
 
 ## Run the development server
+```bash
 python manage.py runserver
-
+```
 ## Run all unit tests
+```bash
 python manage.py test
+```
