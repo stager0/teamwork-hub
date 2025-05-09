@@ -27,6 +27,3 @@ venv/
 .DS_Store
 Thumbs.db
 
-# Static and media
-/static/
-media/
