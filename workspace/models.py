@@ -45,6 +45,9 @@ class Worker(AbstractUser):
     command = models.ForeignKey(Command, on_delete=models.SET_NULL, null=True, related_name="workers")
     is_leader = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ["-is_leader"]
+
 
 class Project(models.Model):
     title = models.CharField(max_length=255)
