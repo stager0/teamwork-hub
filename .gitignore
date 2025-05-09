@@ -12,10 +12,6 @@ db.sqlite3
 *.sqlite3
 *.pyc
 
-# Migrations
-workspace/migrations/
-!workspace/migrations/__init__.py
-
 # Environment
 .env
 .venv/
