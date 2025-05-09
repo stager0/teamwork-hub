@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinLengthValidator, MinValueValidator, MaxValueValidator
 from django.db import models
 
-from teamwork_hub import settings
+from django.conf import settings
 
 
 class Direction(models.Model):
