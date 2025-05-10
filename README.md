@@ -306,6 +306,10 @@ python manage.py runserver
 python manage.py test
 ```
 
+## 🔗Link to the deployed version (render)
+https://teamwork-hub.onrender.com
+---
+
 ## Users  (username -> password)
 Use the following credentials to log in as different roles:
 
